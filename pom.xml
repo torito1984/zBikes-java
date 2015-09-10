@@ -87,13 +87,36 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.2.1</version>
-                <configuration>
-                    <mainClass>zuhlke.app.ZBikesApp</mainClass>
-                    <arguments>
-                        <argument>server</argument>
-                        <argument>src/main/resources/config/config.yaml</argument>
-                    </arguments>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>migration</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>zuhlke.app.ZBikesApp</mainClass>
+                            <arguments>
+                                <argument>db</argument>
+                                <argument>migrate</argument>
+                                <argument>src/main/resources/config/config.yaml</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>run</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>zuhlke.app.ZBikesApp</mainClass>
+                            <arguments>
+                                <argument>server</argument>
+                                <argument>src/main/resources/config/config.yaml</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+
             </plugin>
         </plugins>
     </build>

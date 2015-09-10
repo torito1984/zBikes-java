@@ -6,10 +6,16 @@
 docker run -i -t -e POSTGRESS_PASSWORD=hire -p 5432:5432 postgres:9.4.4
 ```
 
+## Run db migrations
+
+```
+mvn clean package exec:java@migration
+```
+
 ## Run app
 
 ```
-mvn clean package exec:java
+mvn clean package exec:java@run
 ```
 
 Application port: 9000

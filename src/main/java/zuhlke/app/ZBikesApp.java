@@ -1,7 +1,10 @@
 package zuhlke.app;
 
 import io.dropwizard.Application;
+import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.jdbi.DBIFactory;
+import io.dropwizard.migrations.MigrationsBundle;
+import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.skife.jdbi.v2.DBI;
 import zuhlke.dao.ZBikesDao;
@@ -9,6 +12,16 @@ import zuhlke.healthcheck.Ping;
 import zuhlke.resources.ZBikesResource;
 
 public class ZBikesApp extends Application<ZBikesConfiguration> {
+
+    @Override
+    public void initialize(Bootstrap<ZBikesConfiguration> bootstrap) {
+        bootstrap.addBundle(new MigrationsBundle<ZBikesConfiguration>() {
+            @Override
+            public DataSourceFactory getDataSourceFactory(ZBikesConfiguration configuration) {
+                return configuration.getDataSourceFactory();
+            }
+        });
+    }
 
     @Override
     public void run(ZBikesConfiguration config, Environment environment) throws Exception {
