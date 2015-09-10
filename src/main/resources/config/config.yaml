@@ -14,3 +14,9 @@ logging:
         timeZone: UTC
         target: stdout
         logFormat: "[%thread] %highlight(%-5level) %cyan(%logger{15}) - %msg %n"
+
+database:
+  driverClass: org.postgresql.Driver
+  user: postgres
+  password: hire
+  url: jdbc:postgresql://192.168.99.100:5432/postgres
