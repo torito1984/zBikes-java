@@ -7,7 +7,7 @@ import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.skife.jdbi.v2.DBI;
-import zuhlke.dao.ZBikesDao;
+import zuhlke.dao.ZBikesRepository;
 import zuhlke.healthcheck.Ping;
 import zuhlke.resources.ZBikesResource;
 
@@ -26,8 +26,8 @@ public class ZBikesApp extends Application<ZBikesConfiguration> {
     @Override
     public void run(ZBikesConfiguration config, Environment environment) throws Exception {
         final DBI jdbi = new DBIFactory().build(environment, config.getDataSourceFactory(), "postgresql");
-        final ZBikesDao zBikesDao = jdbi.onDemand(ZBikesDao.class);
-        environment.jersey().register(new ZBikesResource(zBikesDao));
+        final ZBikesRepository zBikesRepository = jdbi.onDemand(ZBikesRepository.class);
+        environment.jersey().register(new ZBikesResource(zBikesRepository));
 
         environment.healthChecks().register("ping", new Ping());
     }
