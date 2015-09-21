@@ -15,6 +15,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -25,6 +27,7 @@ import java.util.Set;
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
@@ -34,6 +37,8 @@ public class ZBikesResource {
 
     private final Logger logger = LoggerFactory.getLogger(ZBikesResource.class);
     private final ZBikesRepository zBikesRepository;
+    private Client restClient = ClientBuilder.newClient();
+    private final String AUTH_URL_PLACEHOLDER = "http://localhost:9005/customer/{username}";
 
     public ZBikesResource(ZBikesRepository zBikesDao) {
         this.zBikesRepository = zBikesDao;
@@ -84,6 +89,13 @@ public class ZBikesResource {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     public Response hire(@PathParam("stationId") Integer stationId, @Context UriInfo uriInfo, @Valid Hire hire) {
+
+        String authUrl = AUTH_URL_PLACEHOLDER.replace("{username}", hire.getUsername());
+        Response authResponse = restClient.target(authUrl).request().get();
+        if(authResponse.getStatus()==Response.Status.UNAUTHORIZED.getStatusCode()) {
+            return status(UNAUTHORIZED).entity("").build();
+        }
+
         return zBikesRepository.hire(stationId).map(hiredBike ->
                 ok(new HashMap<String, Object>() {{
                     put("bikeId", hiredBike);
