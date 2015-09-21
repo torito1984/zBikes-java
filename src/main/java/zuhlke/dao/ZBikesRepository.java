@@ -11,7 +11,11 @@ import zuhlke.model.mappers.StationMapper;
 import zuhlke.model.mappers.StationWithBikesMapper;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.Set;
+
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 public abstract class ZBikesRepository {
 
@@ -36,6 +40,16 @@ public abstract class ZBikesRepository {
 
         //Place bikes in new/updated station
         station.getAvailableBikes().forEach(bikeId -> insertBike(Integer.parseInt(bikeId), stationId));
+    }
+
+    @Transaction
+    public Optional<String> hire(Integer stationId) {
+        Set<Station> stations = get(stationId);
+        return stations.isEmpty() ? empty() :
+            stations.iterator().next().getAvailableBikes().stream().findFirst().map(firstBike -> {
+                removeBikeById(Integer.parseInt(firstBike));
+                return of(firstBike);
+            }).orElseGet(() -> empty());
     }
 
     @SqlUpdate("update stations set name=:name, lat=:lat, long=:long where station_id=:station_id")

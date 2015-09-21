@@ -3,12 +3,14 @@ package zuhlke.resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import zuhlke.dao.ZBikesRepository;
+import zuhlke.model.Hire;
 import zuhlke.model.Station;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -49,8 +51,8 @@ public class ZBikesResource {
     @Produces(APPLICATION_JSON)
     public Response getStation(@PathParam("stationId") Integer stationId) {
         Set<Station> stations = zBikesRepository.get(stationId);
-        return stations.isEmpty()?
-                status(NOT_FOUND).entity("Station not found for ID: " + stationId).build() : ok(stations.toArray()[0]).build();
+        return stations.isEmpty() ?
+                status(NOT_FOUND).entity("Station not found for ID: " + stationId).build() : ok(stations.iterator().next()).build();
     }
 
     @PUT
@@ -68,12 +70,26 @@ public class ZBikesResource {
     public Response getClosestStations(@PathParam("lat") Float lat, @PathParam("lon") Float lon) {
 
         Set<Station> nearStations = zBikesRepository.near(
-                        new BigDecimal(format("%.2f", (lat - 0.01))), new BigDecimal(format("%.2f", (lat + 0.01))),
-                        new BigDecimal(format("%.2f", (lon - 0.01))), new BigDecimal(format("%.2f", (lon + 0.01)))
+                new BigDecimal(format("%.2f", (lat - 0.01))), new BigDecimal(format("%.2f", (lat + 0.01))),
+                new BigDecimal(format("%.2f", (lon - 0.01))), new BigDecimal(format("%.2f", (lon + 0.01)))
         );
 
-        return ok(new HashMap<String, Object>(){{
+        return ok(new HashMap<String, Object>() {{
             put("items", nearStations);
         }}).build();
     }
+
+    @POST
+    @Path("/station/{stationId}/bike")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public Response hire(@PathParam("stationId") Integer stationId, @Context UriInfo uriInfo, @Valid Hire hire) {
+        return zBikesRepository.hire(stationId).map(hiredBike ->
+                ok(new HashMap<String, Object>() {{
+                    put("bikeId", hiredBike);
+                }}))
+        .orElseGet(() -> status(NOT_FOUND).entity(""))
+        .build();
+    }
+
 }
