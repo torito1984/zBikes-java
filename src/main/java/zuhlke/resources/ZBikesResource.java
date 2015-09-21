@@ -16,8 +16,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Set;
 
+import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.created;
@@ -45,9 +48,9 @@ public class ZBikesResource {
     @Path("/station/{stationId}")
     @Produces(APPLICATION_JSON)
     public Response getStation(@PathParam("stationId") Integer stationId) {
-        List<Station> stations = zBikesRepository.get(stationId);
+        Set<Station> stations = zBikesRepository.get(stationId);
         return stations.isEmpty()?
-                status(NOT_FOUND).entity("Station not found for ID: " + stationId).build() : ok(stations.get(0)).build();
+                status(NOT_FOUND).entity("Station not found for ID: " + stationId).build() : ok(stations.toArray()[0]).build();
     }
 
     @PUT
@@ -57,5 +60,20 @@ public class ZBikesResource {
     public Response upsert(@PathParam("stationId") Integer stationId, @Context UriInfo uriInfo, @Valid Station station) {
         zBikesRepository.upsert(stationId, station);
         return created(uriInfo.getRequestUri()).entity(station).build();
+    }
+
+    @GET
+    @Path("/station/near/{lat}/{lon}")
+    @Produces(APPLICATION_JSON)
+    public Response getClosestStations(@PathParam("lat") Float lat, @PathParam("lon") Float lon) {
+
+        Set<Station> nearStations = zBikesRepository.near(
+                        new BigDecimal(format("%.2f", (lat - 0.01))), new BigDecimal(format("%.2f", (lat + 0.01))),
+                        new BigDecimal(format("%.2f", (lon - 0.01))), new BigDecimal(format("%.2f", (lon + 0.01)))
+        );
+
+        return ok(new HashMap<String, Object>(){{
+            put("items", nearStations);
+        }}).build();
     }
 }

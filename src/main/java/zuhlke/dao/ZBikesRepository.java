@@ -8,8 +8,10 @@ import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
 import zuhlke.model.Location;
 import zuhlke.model.Station;
 import zuhlke.model.mappers.StationMapper;
+import zuhlke.model.mappers.StationWithBikesMapper;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.Set;
 
 public abstract class ZBikesRepository {
 
@@ -47,9 +49,9 @@ public abstract class ZBikesRepository {
     public abstract boolean exists(@Bind("station_id") Integer station_id);
 
     @SqlQuery("select * from stations left join bikes on (stations.station_id=bikes.station_id) where stations.station_id=:station_id")
-    @Mapper(StationMapper.class)
-    //For JDBI to loop over multiple rows, the returned value must be a set, even if all the rows are combined in a single Station
-    public abstract List<Station> get(@Bind("station_id") Integer stationId);
+    @Mapper(StationWithBikesMapper.class)
+    //For JDBI to loop over multiple rows, the returned value must be a set
+    public abstract Set<Station> get(@Bind("station_id") Integer stationId);
 
     @SqlUpdate("insert into bikes (bike_id, station_id) values (:bike_id, :station_id)")
     public abstract void insertBike(@Bind("bike_id") Integer bikeId, @Bind("station_id") Integer stationId);
@@ -60,4 +62,7 @@ public abstract class ZBikesRepository {
     @SqlUpdate("delete from bikes where station_id=:station_id")
     public abstract void removeBikeByStation(@Bind("station_id") Integer stationId);
 
+    @SqlQuery("select * from stations natural inner join bikes where (lat between :lat1 and :lat2) and (long between :long1 and :long2)")
+    @Mapper(StationMapper.class)
+    public abstract Set<Station> near(@Bind("lat1") BigDecimal lat1, @Bind("lat2") BigDecimal lat2, @Bind("long1") BigDecimal lon1, @Bind("long2") BigDecimal lon2);
 }
