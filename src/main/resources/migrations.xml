@@ -37,6 +37,10 @@
             <column name="station_id" type="bigint">
                 <constraints nullable="false" foreignKeyName="fk_bike_station" references="stations(station_id)" deleteCascade="true" />
             </column>
+            <column name="hired" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="hirer" type="varchar(255)" />
         </createTable>
     </changeSet>
 

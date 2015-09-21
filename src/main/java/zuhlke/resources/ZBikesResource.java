@@ -92,16 +92,24 @@ public class ZBikesResource {
 
         String authUrl = AUTH_URL_PLACEHOLDER.replace("{username}", hire.getUsername());
         Response authResponse = restClient.target(authUrl).request().get();
-        if(authResponse.getStatus()==Response.Status.UNAUTHORIZED.getStatusCode()) {
+        if(authResponse.getStatus()== UNAUTHORIZED.getStatusCode()) {
             return status(UNAUTHORIZED).entity("").build();
         }
 
-        return zBikesRepository.hire(stationId).map(hiredBike ->
+        return zBikesRepository.hire(stationId, hire.getUsername()).map(hiredBike ->
                 ok(new HashMap<String, Object>() {{
                     put("bikeId", hiredBike);
                 }}))
         .orElseGet(() -> status(NOT_FOUND).entity(""))
         .build();
+    }
+
+    @POST
+    @Path("/station/{stationId}/bike/{bikeId}")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public Response returnBike(@PathParam("stationId") Integer stationId, @PathParam("bikeId") Integer bikeId, @Context UriInfo uriInfo, @Valid Hire hire) {
+        return status(zBikesRepository.returnBike(bikeId, stationId, hire.getUsername())).entity("").build();
     }
 
 }
