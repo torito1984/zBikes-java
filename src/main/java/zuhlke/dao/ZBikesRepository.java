@@ -5,8 +5,10 @@ import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.Transaction;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
+import zuhlke.model.Depleted;
 import zuhlke.model.Location;
 import zuhlke.model.Station;
+import zuhlke.model.mappers.StationCount;
 import zuhlke.model.mappers.StationMapper;
 import zuhlke.model.mappers.StationWithBikesMapper;
 
@@ -14,7 +16,9 @@ import javax.ws.rs.core.Response.Status;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
@@ -100,9 +104,9 @@ public abstract class ZBikesRepository {
 
     @Transaction
     public Status returnBike(Integer bikeId, Integer stationId, String username) {
-        if(!existBike(bikeId)) return NOT_FOUND;
-        if(!isHired(bikeId)) return CONFLICT;
-        if(!isHiredByUsername(bikeId, username)) return FORBIDDEN;
+        if (!existBike(bikeId)) return NOT_FOUND;
+        if (!isHired(bikeId)) return CONFLICT;
+        if (!isHiredByUsername(bikeId, username)) return FORBIDDEN;
 
         //Remove the bike, wherever it is
         removeBikeById(bikeId);
@@ -110,4 +114,33 @@ public abstract class ZBikesRepository {
         insertBike(bikeId, stationId);
         return OK;
     }
+
+    @Transaction
+    public Set<Depleted> depleted() {
+        Set<Depleted> bikesCount = countBikes();
+
+        return bikesCount.stream().map(depletedStation -> {
+            Float lat = depletedStation.getLatitude();
+            Float lon = depletedStation.getLongitude();
+            Set<Depleted> closestStations = closeStations(depletedStation.getStationId(),
+                    new BigDecimal(format("%.2f", (lat - 0.01))), new BigDecimal(format("%.2f", (lat + 0.01))),
+                    new BigDecimal(format("%.2f", (lon - 0.01))), new BigDecimal(format("%.2f", (lon + 0.01))));
+            depletedStation.setNearbyFullStations(closestStations);
+            return depletedStation;
+        }).collect(Collectors.toSet());
+    }
+
+    @SqlQuery("select count(*),station_id,lat,long \\" +
+            "from bikes natural inner join stations \\" +
+            "group by station_id,lat,long having count(*)<4")
+    @Mapper(StationCount.class)
+    public abstract Set<Depleted> countBikes();
+
+    @SqlQuery("select count(*),station_id,lat,long \\" +
+            "from bikes natural inner join stations \\ " +
+            "where station_id!=:station_id and (lat between :lat1 and :lat2) and (long between :long1 and :long2) \\" +
+            "group by station_id,lat,long")
+    @Mapper(StationCount.class)
+    public abstract Set<Depleted> closeStations(@Bind("station_id") Integer stationId, @Bind("lat1") BigDecimal lat1, @Bind("lat2") BigDecimal lat2, @Bind("long1") BigDecimal lon1, @Bind("long2") BigDecimal lon2);
+
 }

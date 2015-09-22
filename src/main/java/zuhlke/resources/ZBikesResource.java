@@ -3,6 +3,7 @@ package zuhlke.resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import zuhlke.dao.ZBikesRepository;
+import zuhlke.model.Depleted;
 import zuhlke.model.Hire;
 import zuhlke.model.Station;
 
@@ -19,6 +20,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -96,12 +98,13 @@ public class ZBikesResource {
             return status(UNAUTHORIZED).entity("").build();
         }
 
-        return zBikesRepository.hire(stationId, hire.getUsername()).map(hiredBike ->
-                ok(new HashMap<String, Object>() {{
-                    put("bikeId", hiredBike);
-                }}))
-        .orElseGet(() -> status(NOT_FOUND).entity(""))
-        .build();
+        return zBikesRepository.hire(stationId, hire.getUsername())
+                .map(hiredBike ->
+                    ok(new HashMap<String, Object>() {{
+                        put("bikeId", hiredBike);
+                        }}))
+                .orElseGet(() -> status(NOT_FOUND).entity(""))
+                .build();
     }
 
     @POST
@@ -109,7 +112,18 @@ public class ZBikesResource {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     public Response returnBike(@PathParam("stationId") Integer stationId, @PathParam("bikeId") Integer bikeId, @Context UriInfo uriInfo, @Valid Hire hire) {
-        return status(zBikesRepository.returnBike(bikeId, stationId, hire.getUsername())).entity("").build();
+        Status returnActionStatus = zBikesRepository.returnBike(bikeId, stationId, hire.getUsername());
+        return status(returnActionStatus).entity("").build();
     }
 
+    @GET
+    @Path("/station/depleted")
+    @Produces(APPLICATION_JSON)
+    public Response depleted(@Context UriInfo uriInfo) {
+        Set<Depleted> depletedStations = zBikesRepository.depleted();
+
+        return ok(new HashMap <String, Object > () {{
+            put("items", depletedStations);
+        }}).build();
+    }
 }
