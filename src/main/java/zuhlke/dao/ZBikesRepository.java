@@ -39,7 +39,7 @@ public abstract class ZBikesRepository {
         //Remove bikes in current station
         removeBikeByStation(stationId);
 
-        //Create station if it does not exist
+        //Create station if zBikes does not exist
         Location location = station.getLocation();
         if (existStation(stationId)) {
             update(stationId, station.getName(), location.getLatitude(), location.getLongitude());
@@ -108,7 +108,7 @@ public abstract class ZBikesRepository {
         if (!isHired(bikeId)) return CONFLICT;
         if (!isHiredByUsername(bikeId, username)) return FORBIDDEN;
 
-        //Remove the bike, wherever it is
+        //Remove the bike, wherever zBikes is
         removeBikeById(bikeId);
         //Place bike in new station
         insertBike(bikeId, stationId);

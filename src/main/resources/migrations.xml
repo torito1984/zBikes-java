@@ -23,12 +23,6 @@
         </createTable>
     </changeSet>
 
-    <!--
-        Postgres allows columns of a table to be defined as variable-length multidimensional arrays
-        This is something new in Postgres, it does not appear in other engines such as MySql
-        We could have created such a column in the 'stations' table for the list of allocated bikes
-        However, given the type of queries we will have to do - e.g. which station bike X is in - it is preferable to have a second bikes table
-    -->
     <changeSet id="create bike table" author="">
         <createTable tableName="bikes">
             <column name="bike_id" type="bigserial" autoIncrement="true">
