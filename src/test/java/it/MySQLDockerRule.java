@@ -15,10 +15,10 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertNotNull;
 
-public class PostgresDockerRule implements TestRule {
+public class MySQLDockerRule implements TestRule {
 
     private static String host;
-    private static PostgresContainer container;
+    private static MySQLContainer container;
 
     private static final String DOCKER_HOST = "DOCKER_HOST";
     private static final String DOCKER_CERT_PATH = "DOCKER_CERT_PATH";
@@ -38,7 +38,7 @@ public class PostgresDockerRule implements TestRule {
         }
     }
 
-    public PostgresDockerRule() {
+    public MySQLDockerRule() {
         startPostgresIfNecessary();
     }
 
@@ -55,7 +55,7 @@ public class PostgresDockerRule implements TestRule {
         try {
             if (container == null) {
                 DockerClient docker = DefaultDockerClient.fromEnv().build();
-                container = new PostgresContainer(docker, host);
+                container = new MySQLContainer(docker, host);
             }
         } catch (DockerCertificateException | InterruptedException | DockerException | IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);

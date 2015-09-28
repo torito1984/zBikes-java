@@ -21,9 +21,9 @@ import java.util.concurrent.TimeUnit;
 import static java.lang.Integer.parseInt;
 import static java.util.stream.Collectors.joining;
 
-public class PostgresContainer {
+public class MySQLContainer {
 
-    private static final Logger logger = LoggerFactory.getLogger(PostgresContainer.class);
+    private static final Logger logger = LoggerFactory.getLogger(MySQLContainer.class);
 
     private final String containerId;
     private final int port;
@@ -31,18 +31,21 @@ public class PostgresContainer {
     private String host;
     private volatile boolean stopped = false;
 
-    public static final String DB_PASSWORD = "mysecretpassword";
     public static final String DB_USERNAME = "postgres";
-    public static final String POSTGRES_IMAGE = "postgres:9.4.4";
+    public static final String DB_PASSWORD = "mysecretpassword";
     public static final String INTERNAL_PORT = "5432";
+    public static final String POSTGRES_IMAGE = "mysql:5.6.26";
 
-    public PostgresContainer(DockerClient docker, String host) throws DockerException, InterruptedException, IOException, ClassNotFoundException {
+
+    public MySQLContainer(DockerClient docker, String host) throws DockerException, InterruptedException, IOException, ClassNotFoundException {
         Class.forName("org.postgresql.Driver");
 
         this.docker = docker;
         this.host = host;
 
-        if(docker.searchImages(POSTGRES_IMAGE).isEmpty()) docker.pull(POSTGRES_IMAGE);
+        // It is ok, once downloaded it pulls a local copy
+        //if(docker.searchImages(POSTGRES_IMAGE).isEmpty())
+        docker.pull(POSTGRES_IMAGE);
 
         final HostConfig hostConfig = HostConfig.builder().publishAllPorts(true).build(); //Allocate a random host port to every port exposed within the container
         ContainerConfig containerConfig = ContainerConfig.builder()
