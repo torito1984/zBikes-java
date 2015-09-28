@@ -19,16 +19,16 @@ public class DropwizardAppWithPostgresRule implements TestRule {
 
     private String configFilePath = resourceFilePath("config/test-config.yaml");
 
-    private PostgresDockerRule postgres = new PostgresDockerRule();
+    private MySQLDockerRule mysql = new MySQLDockerRule();
 
     private DropwizardAppRule<ZBikesConfiguration> app = new DropwizardAppRule<>(
             ZBikesApp.class,
             configFilePath,
-            config("database.url", postgres.getConnectionUrl()),
-            config("database.user", postgres.getUsername()),
-            config("database.password", postgres.getPassword()));
+            config("database.url", mysql.getConnectionUrl()),
+            config("database.user", mysql.getUsername()),
+            config("database.password", mysql.getPassword()));
 
-    private RuleChain rules = RuleChain.outerRule(postgres).around(app);
+    private RuleChain rules = RuleChain.outerRule(mysql).around(app);
 
     @Override
     public Statement apply(Statement base, Description description) {

@@ -25,7 +25,7 @@ public class ZBikesApp extends Application<ZBikesConfiguration> {
 
     @Override
     public void run(ZBikesConfiguration config, Environment environment) throws Exception {
-        final DBI jdbi = new DBIFactory().build(environment, config.getDataSourceFactory(), "postgresql");
+        final DBI jdbi = new DBIFactory().build(environment, config.getDataSourceFactory(), "mysql");
         final ZBikesRepository zBikesRepository = jdbi.onDemand(ZBikesRepository.class);
         environment.jersey().register(new ZBikesResource(zBikesRepository));
 

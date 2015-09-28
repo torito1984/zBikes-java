@@ -17,7 +17,7 @@
             <column name="lat" type="decimal">
                 <constraints nullable="false"/>
             </column>
-            <column name="long" type="decimal">
+            <column name="lon" type="decimal">
                 <constraints nullable="false"/>
             </column>
         </createTable>

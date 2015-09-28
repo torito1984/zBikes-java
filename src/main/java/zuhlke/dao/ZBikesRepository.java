@@ -51,11 +51,11 @@ public abstract class ZBikesRepository {
         station.getAvailableBikes().forEach(bikeId -> insertBike(Integer.parseInt(bikeId), stationId));
     }
 
-    @SqlUpdate("update stations set name=:name, lat=:lat, long=:long where station_id=:station_id")
-    public abstract void update(@Bind("station_id") Integer station_id, @Bind("name") String name, @Bind("lat") Float lat, @Bind("long") Float lon);
+    @SqlUpdate("update stations set name=:name, lat=:lat, lon=:lon where station_id=:station_id")
+    public abstract void update(@Bind("station_id") Integer station_id, @Bind("name") String name, @Bind("lat") Float lat, @Bind("lon") Float lon);
 
-    @SqlUpdate("insert into stations (station_id, name, lat, long) values (:station_id, :name, :lat, :long)")
-    public abstract void insert(@Bind("station_id") Integer station_id, @Bind("name") String name, @Bind("lat") Float lat, @Bind("long") Float lon);
+    @SqlUpdate("insert into stations (station_id, name, lat, lon) values (:station_id, :name, :lat, :lon)")
+    public abstract void insert(@Bind("station_id") Integer station_id, @Bind("name") String name, @Bind("lat") Float lat, @Bind("lon") Float lon);
 
     @SqlQuery("select 1 from stations where station_id=:station_id")
     //The returned value must be a primitive (no autoboxing) if no mapper is provided
@@ -76,9 +76,9 @@ public abstract class ZBikesRepository {
     @SqlUpdate("delete from bikes where station_id=:station_id")
     public abstract void removeBikeByStation(@Bind("station_id") Integer stationId);
 
-    @SqlQuery("select * from stations natural inner join bikes where (lat between :lat1 and :lat2) and (long between :long1 and :long2)")
+    @SqlQuery("select * from stations natural inner join bikes where (lat between :lat1 and :lat2) and (lon between :lon1 and :lon2)")
     @Mapper(StationMapper.class)
-    public abstract Set<Station> near(@Bind("lat1") BigDecimal lat1, @Bind("lat2") BigDecimal lat2, @Bind("long1") BigDecimal lon1, @Bind("long2") BigDecimal lon2);
+    public abstract Set<Station> near(@Bind("lat1") BigDecimal lat1, @Bind("lat2") BigDecimal lat2, @Bind("lon1") BigDecimal lon1, @Bind("lon2") BigDecimal lon2);
 
     @SqlUpdate("update bikes set hired=TRUE, hirer=:username where bike_id=:bike_id")
     public abstract void hireBike(@Bind("bike_id") Integer bikeId, @Bind("username") String username);
@@ -130,17 +130,17 @@ public abstract class ZBikesRepository {
         }).collect(Collectors.toSet());
     }
 
-    @SqlQuery("select count(*),station_id,lat,long \\" +
+    @SqlQuery("select count(*),station_id,lat,lon \\" +
             "from bikes natural inner join stations \\" +
-            "group by station_id,lat,long having count(*)<4")
+            "group by station_id,lat,lon having count(*)<4")
     @Mapper(StationCount.class)
     public abstract Set<Depleted> countBikes();
 
-    @SqlQuery("select count(*),station_id,lat,long \\" +
+    @SqlQuery("select count(*),station_id,lat,lon \\" +
             "from bikes natural inner join stations \\ " +
-            "where station_id!=:station_id and (lat between :lat1 and :lat2) and (long between :long1 and :long2) \\" +
-            "group by station_id,lat,long")
+            "where station_id!=:station_id and (lat between :lat1 and :lat2) and (lon between :lon1 and :lon2) \\" +
+            "group by station_id,lat,lon")
     @Mapper(StationCount.class)
-    public abstract Set<Depleted> closeStations(@Bind("station_id") Integer stationId, @Bind("lat1") BigDecimal lat1, @Bind("lat2") BigDecimal lat2, @Bind("long1") BigDecimal lon1, @Bind("long2") BigDecimal lon2);
+    public abstract Set<Depleted> closeStations(@Bind("station_id") Integer stationId, @Bind("lat1") BigDecimal lat1, @Bind("lat2") BigDecimal lat2, @Bind("lon1") BigDecimal lon1, @Bind("lon2") BigDecimal lon2);
 
 }

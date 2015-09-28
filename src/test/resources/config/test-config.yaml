@@ -17,7 +17,7 @@ logging:
 
 
 database:
-  driverClass: org.postgresql.Driver
+  driverClass: com.mysql.jdbc.Driver
   user:
   password:
   url:

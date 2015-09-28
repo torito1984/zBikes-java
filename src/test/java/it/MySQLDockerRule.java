@@ -39,7 +39,7 @@ public class MySQLDockerRule implements TestRule {
     }
 
     public MySQLDockerRule() {
-        startPostgresIfNecessary();
+        startMySQLIfNecessary();
     }
 
     public String getConnectionUrl() {
@@ -51,7 +51,7 @@ public class MySQLDockerRule implements TestRule {
         return statement;
     }
 
-    private void startPostgresIfNecessary() {
+    private void startMySQLIfNecessary() {
         try {
             if (container == null) {
                 DockerClient docker = DefaultDockerClient.fromEnv().build();
